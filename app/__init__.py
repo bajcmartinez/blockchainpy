@@ -11,9 +11,10 @@ def create_app(test_config=None):
 
     @app.route('/chain')
     def get_chain():
+        chain = blockchain.full_chain
         response = {
-            'chain': blockchain.chain,
-            'length': len(blockchain.chain)
+            'chain': chain,
+            'length': len(chain)
         }
         return blockchain_encoder.encode(response), 200
 
@@ -24,7 +25,7 @@ def create_app(test_config=None):
 
         :return: result of the mining attempt and the new block
         """
-        block = blockchain.mine()
+        block = blockchain.mine('address')
 
         response = {
             'message': "New Block Mined",

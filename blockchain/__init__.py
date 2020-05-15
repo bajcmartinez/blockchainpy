@@ -1,4 +1,3 @@
-from uuid import uuid4
 import hashlib
 from blockchain.block import Block
 from blockchain.transaction import Transaction
@@ -8,10 +7,7 @@ class Blockchain:
 
     def __init__(self):
         self.__current_transactions = []
-        self.chain = []
-        self.nodes = set()
-        # Generate random number to be used as node_id
-        self.node_id = str(uuid4()).replace('-', '')
+        self.__chain = []
         # Create genesis block
         self.create_genesis()
 
@@ -19,28 +15,27 @@ class Blockchain:
         """
         Creates the Genesis block and passes it to the chain
 
-        :return:
+        :return: None
         """
-        block = Block(0, self.__current_transactions, 0, '00')
+        genesis_block = Block(0, self.__current_transactions, 0, '00')
+        self.__chain.append(genesis_block)
 
-        self.chain.append(block)
-        return block
-
-    def create_block(self, nonce, previous_hash):
+    def add_block(self, block):
         """
         Creates a new block and passes it to the chain
 
-        :param nonce: <int> nonce for the new block
-        :param previous_hash: <str> previous hash
-        :return: <Block> newly created block
+        :param block: <Block> Block to add to the chain
+        :return: <bool> True if the block is added to the chain, False if not.
         """
-        block = Block(self.last_block.index + 1, self.__current_transactions, nonce, previous_hash)
+        if self.validate_block(block, self.last_block):
+            self.__chain.append(block)
 
-        # Reset the current list of transactions
-        self.__current_transactions = []
+            # Remove transactions from the list
+            self.__current_transactions = []
 
-        self.chain.append(block)
-        return block
+            return True
+
+        return False
 
     def create_transaction(self, sender, recipient, amount):
         """
@@ -60,13 +55,16 @@ class Blockchain:
 
         return None, False
 
-    def mine(self):
+    def mine(self, reward_address):
         """
         Mines a new block into the chain
 
+        :param reward_address: <str> address where the reward coin will be transferred to
         :return: result of the mining attempt and the new block
         """
         last_block = self.last_block
+        index = last_block.index + 1
+        previous_hash = last_block.hash
 
         # Let's start with the heavy duty, generating the proof of work
         nonce = self.generate_proof_of_work(last_block)
@@ -75,12 +73,17 @@ class Blockchain:
         # In this particular case, the miner will receive coins that are just "created", so there is no sender
         self.create_transaction(
             sender="0",
-            recipient=self.node_id,
+            recipient=reward_address,
             amount=1,
         )
 
         # Add the block to the new chain
-        return self.create_block(nonce, last_block.hash)
+        block = Block(index, self.__current_transactions, nonce, previous_hash)
+
+        if self.add_block(block):
+            return block
+
+        return None
 
     @staticmethod
     def validate_proof_of_work(last_nonce, last_hash, nonce):
@@ -114,10 +117,82 @@ class Blockchain:
 
         return nonce
 
+    def validate_block(self, current_block, previous_block):
+        """
+        Validates a block with reference to its previous
+
+        :param current_block:
+        :param previous_block:
+        :return:
+        """
+        # Check the block index
+        if current_block.index != previous_block.index + 1:
+            print('Index mismatch')
+            return False
+
+        if current_block.previous_hash != previous_block.hash:
+            print('hash not linked')
+            return False
+
+        if current_block.hash != current_block.hash_block():
+            print('hash mismatch')
+            return False
+
+        if not self.validate_proof_of_work(previous_block.nonce, previous_block.hash, current_block.nonce):
+            print('wrong proof')
+            return False
+
+        return True
+
+    def validate_chain(self, chain_to_validate):
+        """
+        Verifies if a given chain is valid
+
+        :param chain_to_validate: <[Block]>
+        :return: <bool> True if the chain is valid
+        """
+        # First validate both genesis blocks
+        if chain_to_validate[0].hash_block() != self.__chain[0].hash_block():
+            return False
+
+        # Then we compare each block with its previous one
+        for x in range(1, len(chain_to_validate)):
+            if not self.validate_block(chain_to_validate[x], chain_to_validate[x - 1]):
+                return False
+
+        return True
+
+    def replace_chain(self, new_chain):
+        """
+        Attempts to replace the chain for a new one
+
+        :param new_chain:
+        :return: <bool> True if the chain was replace, False if not.
+        """
+        # We only replace if the new chain is bigger than the current one
+        if len(new_chain) <= len(self.__chain):
+            return False
+
+        # Validate the new chain
+        if not self.validate_chain(new_chain):
+            return False
+
+        new_blocks = new_chain[len(self.__chain):]
+        for block in new_blocks:
+            self.add_block(block)
+
     @property
     def last_block(self):
-        return self.chain[-1]
+        return self.__chain[-1]
 
     @property
     def last_transaction(self):
         return self.__current_transactions[-1]
+
+    @property
+    def pending_transactions(self):
+        return self.__current_transactions
+
+    @property
+    def full_chain(self):
+        return self.__chain
