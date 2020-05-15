@@ -1,6 +1,6 @@
-import hashlib as hasher
+import hashlib
 from json import dumps
-from blockchain.encoder import BlockchainEncoder
+from lib.encoder import BlockchainEncoder
 import time
 
 
@@ -34,6 +34,6 @@ class Block:
 
         :return:
         """
-        sha = hasher.sha256()
+        sha = hashlib.sha256()
         sha.update(self.serialize().encode('utf-8'))
         return sha.hexdigest()

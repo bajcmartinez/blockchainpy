@@ -1,5 +1,5 @@
 from uuid import uuid4
-import hashlib as hasher
+import hashlib
 from blockchain.block import Block
 from blockchain.transaction import Transaction
 
@@ -45,6 +45,28 @@ class Blockchain:
 
         return transaction
 
+    def mine(self):
+        """
+        Mines a new block into the chain
+
+        :return: result of the mining attempt and the new block
+        """
+        last_block = self.last_block
+
+        # Let's start with the heavy duty, generating the proof of work
+        nonce = self.generate_proof_of_work(last_block)
+
+        # In the next step we will create a new transaction to reward the miner
+        # In this particular case, the miner will receive coins that are just "created", so there is no sender
+        self.create_transaction(
+            sender="0",
+            recipient=self.node_id,
+            amount=1,
+        )
+
+        # Add the block to the new chain
+        return self.create_block(nonce, last_block.hash)
+
     @staticmethod
     def validate_proof_of_work(last_nonce, last_hash, nonce):
         """
@@ -55,7 +77,7 @@ class Blockchain:
         :param last_hash: <str> Hash of the last block
         :return: <bool> True if correct, False if not.
         """
-        sha = hasher.sha256(f'{last_nonce}{last_hash}{nonce}'.encode())
+        sha = hashlib.sha256(f'{last_nonce}{last_hash}{nonce}'.encode())
         return sha.hexdigest()[:4] == '0000'
 
     def generate_proof_of_work(self, block):
