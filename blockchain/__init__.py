@@ -127,19 +127,15 @@ class Blockchain:
         """
         # Check the block index
         if current_block.index != previous_block.index + 1:
-            print('Index mismatch')
             return False
 
         if current_block.previous_hash != previous_block.hash:
-            print('hash not linked')
             return False
 
         if current_block.hash != current_block.hash_block():
-            print('hash mismatch')
             return False
 
         if not self.validate_proof_of_work(previous_block.nonce, previous_block.hash, current_block.nonce):
-            print('wrong proof')
             return False
 
         return True
