@@ -20,13 +20,17 @@ class Block:
         self.previous_hash = previous_hash
         self.hash = self.hash_block()
 
-    def serialize(self):
+    def serialize(self, ignore=None):
         """
         Serializes a block into a string
 
         :return:
         """
-        return dumps(self.__dict__, cls=BlockchainEncoder)
+        if ignore is None:
+            ignore = []
+        block_params = {x: self.__dict__[x] for x in self.__dict__ if x not in ignore}
+
+        return dumps(block_params, cls=BlockchainEncoder)
 
     def hash_block(self):
         """
@@ -35,5 +39,5 @@ class Block:
         :return:
         """
         sha = hashlib.sha256()
-        sha.update(self.serialize().encode('utf-8'))
+        sha.update(self.serialize(['hash']).encode('utf-8'))
         return sha.hexdigest()
