@@ -2,12 +2,12 @@ from flask import Flask, request
 from blockchain import Blockchain
 from lib.encoder import BlockchainEncoder
 
+
 def create_app(test_config=None):
     app = Flask(__name__)
 
     blockchain = Blockchain()
     blockchain_encoder = BlockchainEncoder()
-
 
     @app.route('/chain')
     def get_chain():
@@ -16,7 +16,6 @@ def create_app(test_config=None):
             'length': len(blockchain.chain)
         }
         return blockchain_encoder.encode(response), 200
-
 
     @app.route('/mine', methods=['GET'])
     def mine():
@@ -33,7 +32,6 @@ def create_app(test_config=None):
         }
         return blockchain_encoder.encode(response), 200
 
-
     @app.route('/transactions/new', methods=['POST'])
     def new_transaction():
         values = request.get_json()
@@ -44,13 +42,20 @@ def create_app(test_config=None):
             return 'Invalid transaction', 400
 
         # Create a new Transaction
-        transaction = blockchain.create_transaction(values['sender'], values['recipient'], values['amount'])
+        transaction, valid = blockchain.create_transaction(values['sender'], values['recipient'], values['amount'])
+
+        if valid:
+            response = {
+                'message': "New transaction registered",
+                'transaction': transaction
+            }
+            return blockchain_encoder.encode(response), 201
 
         response = {
-            'message': "New transaction registered",
-            'transaction': transaction
+            'message': 'Invalid transaction details'
         }
-        return blockchain_encoder.encode(response), 201
+
+        return response, 400
 
     return app
 

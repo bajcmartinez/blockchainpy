@@ -24,3 +24,17 @@ class Transaction:
         :return:
         """
         return dumps(self.__dict__)
+
+    def validate(self):
+        """
+        Checks if a transaction is valid
+
+        :return: <bool> True if it is valid, False if not.
+        """
+
+        # Prevent stealing by creating negative transactions
+        if self.amount < 0:
+            return False
+
+        return True
+

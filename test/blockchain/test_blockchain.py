@@ -22,17 +22,3 @@ class TestBlockchain(TestCase):
         self.assertEqual(reward_transaction.sender, '0')
         self.assertEqual(reward_transaction.recipient, blockchain.node_id)
         self.assertEqual(reward_transaction.amount, 1)
-
-    def test_create_transaction(self):
-        """
-        Test creating a transaction
-        """
-        blockchain = Blockchain()
-        blockchain.create_transaction('sender', 'recipient', 1)
-
-        transaction = blockchain.current_transactions[-1]
-
-        # Let's now validate the transaction
-        self.assertEqual(transaction.sender, 'sender')
-        self.assertEqual(transaction.recipient, 'recipient')
-        self.assertEqual(transaction.amount, 1)
