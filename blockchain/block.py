@@ -1,7 +1,6 @@
 import hashlib
-from json import dumps
-from lib.encoder import BlockchainEncoder
-import time
+from api.schema.block import BlockSchema
+from time import time
 
 
 class Block:
@@ -14,7 +13,7 @@ class Block:
         :param previous_hash:
         """
         self.index = index
-        self.timestamp = time.time()
+        self.timestamp = time()
         self.transactions = transactions
         self.nonce = nonce
         self.previous_hash = previous_hash
@@ -30,7 +29,7 @@ class Block:
             ignore = []
         block_params = {x: self.__dict__[x] for x in self.__dict__ if x not in ignore}
 
-        return dumps(block_params, cls=BlockchainEncoder)
+        return BlockSchema().dumps(block_params)
 
     def hash_block(self):
         """

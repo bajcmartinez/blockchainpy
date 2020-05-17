@@ -1,15 +1,31 @@
+from http import HTTPStatus
 from flask import Blueprint
-from api.globals import blockchain, blockchain_encoder
+from flasgger import swag_from
+from api.globals import blockchain
+from api.schema.miner import MineSchema
 
 miner_api = Blueprint('miner', __name__)
 
 
-@miner_api.route('/mine', methods=['GET'])
+@miner_api.route('/mine', methods=['POST'])
+@swag_from({
+    'responses': {
+        HTTPStatus.OK.value: {
+            'description': 'The block with all its transactions.',
+            'schema': MineSchema
+        }
+    }
+})
 def mine():
     """
     Mines a new block into the chain
-
-    :return: result of the mining attempt and the new block
+    Consolidates the pending transactions into a new block, and adds the block to the blockchain
+    ---
+    produces:
+        - application/json
+    responses:
+        200:
+            description: Result of the mining attempt and the new block
     """
     block = blockchain.mine('address')
 
@@ -17,4 +33,5 @@ def mine():
         'message': "New Block Mined",
         'block': block
     }
-    return blockchain_encoder.encode(response), 200
+
+    return MineSchema().dumps(response), 200

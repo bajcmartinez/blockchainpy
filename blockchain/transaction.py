@@ -13,8 +13,8 @@ class Transaction:
         :param amount: <float> amount to be transferred
         """
         self.sender = sender
-        self.timestamp = time.time()
         self.recipient = recipient
+        self.timestamp = time.time()
         self.amount = amount
 
     def serialize(self):

@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 flask = "*"
 requests = "*"
+flasgger = "*"
+flask-marshmallow = "*"
+apispec = "*"
 
 [dev-packages]
 
