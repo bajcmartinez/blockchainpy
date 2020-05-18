@@ -25,7 +25,7 @@ A very minimal implementation of a blockchain in Python. Please note that this i
    pipenv run python -m flask run
     ```
 
-4. Visit http://localhost/api-docs
+4. Visit http://localhost/apidocs
    
 ## Tests
 
