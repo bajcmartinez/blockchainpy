@@ -1,5 +1,3 @@
-import hashlib as hasher
-from json import dumps
 import time
 
 
@@ -16,14 +14,6 @@ class Transaction:
         self.recipient = recipient
         self.timestamp = time.time()
         self.amount = amount
-
-    def serialize(self):
-        """
-        Serializes a block into a string
-
-        :return:
-        """
-        return dumps(self.__dict__)
 
     def validate(self):
         """
