@@ -12,6 +12,10 @@ def create_app():
 
 app = create_app()
 ma = Marshmallow(app)
+
+app.config['SWAGGER'] = {
+    'title': 'Blockchain API',
+}
 swagger = Swagger(app)
 
 
